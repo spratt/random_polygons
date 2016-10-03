@@ -39,6 +39,7 @@
             console.log('adding point');
             pointSet.addPoint(p);
         }
+        pointSet.draw();
     }
 
     var inputNodeList = document.querySelectorAll('input');

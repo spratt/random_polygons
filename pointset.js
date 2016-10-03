@@ -58,9 +58,8 @@ var PointSet = (function() {
             this.convexHull();
         }
     };
-    pointSet.prototype.removePoint = function(index, noCHcheck) {
+    pointSet.prototype.removePoint = function(index) {
         var edges = this.edges;
-        var selected_point = this.selected_point;
         var new_edges = [];
         for(var i = 0; i < edges.length; ++i) {
             var e = edges[i];
@@ -80,9 +79,6 @@ var PointSet = (function() {
         }
         this.edges = new_edges;
         this.points.splice(index, 1);
-        if(selected_point === index) {
-            this.selected_point = -1;
-        }
     };
     pointSet.prototype.removeEdge = function(index) {
         this.edges.splice(index, 1);
@@ -169,6 +165,7 @@ var PointSet = (function() {
         var radix = 10;
     };
     pointSet.prototype.draw = function() {
+        this.canvas.clear();
         for(var i = 0; i < this.points.length; ++i) {
             var point = this.points[i];
             this.canvas.drawPoint(point.x, point.y);

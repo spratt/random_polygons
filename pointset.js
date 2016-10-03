@@ -6,12 +6,13 @@ var PointSet = (function() {
         this.clear = function() {
             this.points = [];
             this.edges = [];
+            this.X = null;
         };
         this.clear();
     }
     pointSet.prototype.setN = function(n) {
         this.n = n;
-        var width = this.canvas.c.width - (6 * this.canvas.pointRadius);
+        var width = this.canvas.c.width - (2 * this.canvas.pointRadius);
         this.gapX = width / (n - 1);
         var height = this.canvas.c.height - (2 * this.canvas.pointRadius);
         this.gapY = height / (n - 1);
@@ -80,8 +81,13 @@ var PointSet = (function() {
             var e = a[0];
             var p = a[1];
             console.log('Crosses edge: ', e);
-            var p0 = this.points[e[0]];
-            var p1 = this.points[e[1]];
+            console.log('At point: ', p);
+            var e1 = this.points[e[0]];
+            var e2 = this.points[e[1]];
+            console.log('edge coords: ', e1, ',', e2);
+            var ne1 = this.points[new_edge[0]];
+            var ne2 = this.points[new_edge[1]];
+            console.log('new_edge coords: ', ne1, ',', ne2);
             return false;
         } else {
             this.edges.push(new_edge);
@@ -213,6 +219,9 @@ var PointSet = (function() {
             var pt2 = this.points[edge[1]];
             this.canvas.drawEdge(pt1, pt2);
         }
+        if(this.X !== null) {
+            this.canvas.drawPoint(this.X.x, this.X.y, 'red');
+        }
     };
     function sqrDistance(a, b) {
         return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
@@ -260,6 +269,13 @@ var PointSet = (function() {
 
         return array;
     }
+    function generateIndices(len) {
+        var indices = [];
+        for(var i = 0; i < len; ++i) {
+            indices.push(i);
+        }
+        return indices;
+    }
     pointSet.prototype.generateRandomPolygonA = function() {
         if(this.points.length < this.n) {
             this.generateRandomPoints();
@@ -272,10 +288,7 @@ var PointSet = (function() {
             done = true;
             ++tries;
             this.edges = [];
-            var indices = [];
-            for(var i = 0; i < this.points.length; ++i) {
-                indices.push(i);
-            }
+            var indices = generateIndices(this.points.length);
             shuffle(indices);
             console.log('Generating polygon: ', indices);
             for(var i = 1; i < indices.length; ++i) {
@@ -298,9 +311,50 @@ var PointSet = (function() {
             console.log('Succeeded after ', tries, ' tries!');
         }
     };
+    function getCircularAngle(p,q) {
+        //       q
+        //      /|  
+        //     / |
+        //    /  |  dy = q.y - p.y
+        //   / t |
+        //  /_)__|
+        // p  dx = q.x - p.x
+        var dy = q.y - p.y;
+        var dx = q.x - p.x;
+        var t = Math.atan2(dy, dx);
+        return t;
+    }
     pointSet.prototype.generateRandomPolygonB = function() {
+        var ps = this;
         if(this.points.length < this.n) {
             this.generateRandomPoints();
+        }
+        this.edges = [];
+        var indices = generateIndices(this.points.length);
+        shuffle(indices);
+        var avgX = (this.points[indices[0]].x +
+                    this.points[indices[1]].x +
+                    this.points[indices[2]].x) / 3;
+        var avgY = (this.points[indices[0]].y +
+                    this.points[indices[1]].y +
+                    this.points[indices[2]].y) / 3;
+        this.X = {x: avgX, y: avgY};
+        indices.sort(function(a,b) {
+            var tXa = getCircularAngle(ps.X, ps.points[a]);
+            var tXb = getCircularAngle(ps.X, ps.points[b]);
+            return tXa - tXb;
+        });
+        console.log('Generating polygon: ', indices);
+        for(var i = 1; i < indices.length; ++i) {
+            var pt1 = indices[i-1];
+            var pt2 = indices[i];
+            if(!this.addEdge(pt1, pt2)) {
+                console.log('Failed');
+                return;
+            }
+        }
+        if(!this.addEdge(indices[indices.length - 1], indices[0])) {
+            console.log('Failed on last edge');
         }
     };
     

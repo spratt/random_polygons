@@ -53,32 +53,33 @@
             });
         });
     }
+    function getN() {
+        var radix = 10;
+        var new_n = parseInt(nbox.value, radix);
+        if(isNaN(new_n) || new_n < min_n) {
+            nbox.value = min_n;
+            n = min_n;
+        } else {
+            n = new_n;
+        }
+        pointSets.forEach(function(pointSet) {
+            pointSet.clear();
+            pointSet.setN(n);
+            pointSet.draw();
+        });
+        console.log('n changed to: ', n);
+    }
 
     function resize() {
         pointSets.forEach(function(pointSet) {
             pointSet.canvas.c.width = window.innerWidth;
+            getN();
             pointSet.draw();
         });
     }
 
     function onLoad() {
         // restore n
-        function getN() {
-            var radix = 10;
-            var new_n = parseInt(nbox.value, radix);
-            if(isNaN(new_n) || new_n < min_n) {
-                nbox.value = min_n;
-                n = min_n;
-            } else {
-                n = new_n;
-            }
-            pointSets.forEach(function(pointSet) {
-                pointSet.clear();
-                pointSet.setN(n);
-                pointSet.draw();
-            });
-            console.log('n changed to: ', n);
-        }
         nbox.addEventListener('change', getN);
         getN();
         

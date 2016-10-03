@@ -52,14 +52,25 @@ var Edges = (function() {
 
         var p = {x: p0.x + (t * s10_x), y: p0.y + (t * s10_y)};
 
-        if(p.x === p0.x && p.y === p0.y ||
-           p.x === p1.x && p.y === p1.y ||
-           p.x === p2.x && p.y === p2.y ||
-           p.x === p3.x && p.y === p3.y) {
-            // intersection at endpoint doesn't count
-            return false;
+        var points = [p0, p1, p2, p3];
+
+        function floatPrecision(f, precision) {
+            var big = Math.pow(10, precision);
+            var lossy = Math.round(f * big);
+            return lossy/big;
         }
-        
+
+        var precision = 12;
+        for(let i = 0; i < points.length; ++i) {
+            let point = points[i];
+            if(floatPrecision(p.x, precision) ===
+               floatPrecision(point.x, precision) &&
+               floatPrecision(p.y, precision) ===
+               floatPrecision(point.y, precision)) {
+                // intersection at endpoint doesn't count
+                return false;
+            }
+        }
         return p;
     }
     

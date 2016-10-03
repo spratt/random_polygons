@@ -2,23 +2,47 @@
 var PointSet = (function() {
     function pointSet(canvas) {
         this.canvas = canvas;
+        this.n = NaN;
         this.clear = function() {
             this.points = [];
             this.edges = [];
         };
         this.clear();
     }
+    pointSet.prototype.setN = function(n) {
+        this.n = n;
+        var width = this.canvas.c.width;
+        this.gapX = width / (n - 1);
+        var height = this.canvas.c.height;
+        this.gapY = height / (n - 1);
+    };
+    pointSet.prototype.normalizeX = function(x) {
+        return Math.round(x / this.gapX) * this.gapX;
+    };
+    pointSet.prototype.normalizeY = function(y) {
+        return Math.round(y / this.gapY) * this.gapY;
+    };
+    pointSet.prototype.normalizeCoordinates = function(p) {
+        return {x:this.normalizeX(p.x),
+                y:this.normalizeY(p.y)};
+    };
     pointSet.prototype.addPoint = function(p) {
+        if(this.points.length >= this.n) {
+            return;
+        }
         var points_copy = this.points.slice(0);
-        points_copy.push(p);
+        var normalized_p = this.normalizeCoordinates(p);
+        console.log('p: ', p);
+        console.log('normalized_p: ', normalized_p);
+        points_copy.push(normalized_p);
         Points.sortPoints(points_copy);
-        var i = points_copy.indexOf(p);
+        var i = points_copy.indexOf(normalized_p);
         for(var j = 0; j < this.edges.length; ++j) {
             var e = this.edges[j];
             if(e[0] >=i) e[0] = e[0] + 1;
             if(e[1] >=i) e[1] = e[1] + 1;
         }
-        this.points.push(p);
+        this.points.push(normalized_p);
         Points.sortPoints(this.points);
     };
     pointSet.prototype.hasEdge = function(p, q) {

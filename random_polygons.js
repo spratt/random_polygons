@@ -2,7 +2,7 @@
 (function() {
     // configuration
     var clickBox = 60;
-    var default_n = 5;
+    var min_n = 3;
 
     var pointSets = [new PointSet(new Canvas(document.getElementById('c')))];
 
@@ -61,19 +61,6 @@
         });
     }
 
-    function getN() {
-        var min_n = 3;
-        var radix = 10;
-        var new_n = parseInt(nbox.value, radix);
-        if(isNaN(new_n) || new_n < min_n) {
-            nbox.value = min_n;
-            n = min_n;
-        } else {
-            n = new_n;
-        }
-        return n;
-    }
-
     function onLoad() {
         // restore n
         getN();
@@ -119,10 +106,23 @@
                 pointSet.draw();
             });
         });
-        nbox.addEventListener('change', function(evt) {
-            getN();
+        function getN() {
+            var radix = 10;
+            var new_n = parseInt(nbox.value, radix);
+            if(isNaN(new_n) || new_n < min_n) {
+                nbox.value = min_n;
+                n = min_n;
+            } else {
+                n = new_n;
+            }
+            pointSets.forEach(function(pointSet) {
+                pointSet.clear();
+                pointSet.setN(n);
+            });
             console.log('n changed to: ', n);
-        });
+        }
+        nbox.addEventListener('change', getN);
+        getN();
     }
     
     (function setupOnLoad() {

@@ -2,10 +2,12 @@
 (function() {
     // configuration
     var clickBox = 60;
+    var default_n = 5;
 
     var pointSets = [new PointSet(new Canvas(document.getElementById('c')))];
 
     var output = document.getElementById('output');
+    var nbox = document.getElementById('n');
 
     function saveState() {
         var state = null;
@@ -59,7 +61,23 @@
         });
     }
 
+    function getN() {
+        var min_n = 3;
+        var radix = 10;
+        var new_n = parseInt(nbox.value, radix);
+        if(isNaN(new_n) || new_n < min_n) {
+            nbox.value = min_n;
+            n = min_n;
+        } else {
+            n = new_n;
+        }
+        return n;
+    }
+
     function onLoad() {
+        // restore n
+        getN();
+        
         // restore state
         var url = decodeURI(document.location.toString());
         if(url.indexOf('?') !== -1) {
@@ -100,6 +118,10 @@
                 start = null;
                 pointSet.draw();
             });
+        });
+        nbox.addEventListener('change', function(evt) {
+            getN();
+            console.log('n changed to: ', n);
         });
     }
     

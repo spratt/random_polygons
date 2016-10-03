@@ -63,7 +63,6 @@
             n = new_n;
         }
         pointSets.forEach(function(pointSet) {
-            pointSet.clear();
             pointSet.setN(n);
             pointSet.draw();
         });

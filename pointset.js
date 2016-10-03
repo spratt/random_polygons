@@ -11,6 +11,7 @@ var PointSet = (function() {
         this.clear();
     }
     pointSet.prototype.setN = function(n) {
+        if(n === this.n) return;
         this.n = n;
         var width = this.canvas.c.width - (2 * this.canvas.pointRadius);
         this.gapX = width / (n - 1);
@@ -220,7 +221,7 @@ var PointSet = (function() {
             this.canvas.drawEdge(pt1, pt2);
         }
         if(this.X !== null) {
-            this.canvas.drawPoint(this.X.x, this.X.y, 'red');
+            this.canvas.drawText('X', this.X.x, this.X.y, 'red');
         }
     };
     function sqrDistance(a, b) {

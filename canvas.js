@@ -25,6 +25,14 @@ var Canvas = (function() {
         this.context.strokeStyle = color;
         this.context.stroke();
     };
+    canvas.prototype.drawText = function(text, x, y, color) {
+        if(!color) {
+            color = 'black';
+        }
+        this.context.strokeStyle = color;
+        this.context.font = "24px sans-serif";
+        this.context.strokeText(text, x, y);
+    };
     canvas.prototype.clear = function() {
         var context = this.context;
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);

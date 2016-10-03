@@ -11,16 +11,17 @@ var PointSet = (function() {
     }
     pointSet.prototype.setN = function(n) {
         this.n = n;
-        var width = this.canvas.c.width;
+        var width = this.canvas.c.width - (6 * this.canvas.pointRadius);
         this.gapX = width / (n - 1);
-        var height = this.canvas.c.height;
+        var height = this.canvas.c.height - (2 * this.canvas.pointRadius);
         this.gapY = height / (n - 1);
+        this.clear();
     };
     pointSet.prototype.normalizeX = function(x) {
-        return Math.round(x / this.gapX) * this.gapX;
+        return this.canvas.pointRadius + Math.round(x / this.gapX) * this.gapX;
     };
     pointSet.prototype.normalizeY = function(y) {
-        return Math.round(y / this.gapY) * this.gapY;
+        return this.canvas.pointRadius + Math.round(y / this.gapY) * this.gapY;
     };
     pointSet.prototype.normalizeCoordinates = function(p) {
         return {x:this.normalizeX(p.x),
@@ -28,16 +29,16 @@ var PointSet = (function() {
     };
     pointSet.prototype.addPoint = function(p) {
         if(this.points.length >= this.n) {
+            console.log('Too many points');
             return;
         }
         var points_copy = this.points.slice(0);
         var normalized_p = this.normalizeCoordinates(p);
-        console.log('p: ', p);
-        console.log('normalized_p: ', normalized_p);
         for(var i = 0; i < this.points.length; ++i) {
             var old_pt = this.points[i];
             if(normalized_p.x === old_pt.x &&
                normalized_p.y === old_pt.y) {
+                console.log('Point exists');
                 return;
             }
         }
@@ -49,19 +50,17 @@ var PointSet = (function() {
             if(e[0] >=i) e[0] = e[0] + 1;
             if(e[1] >=i) e[1] = e[1] + 1;
         }
+        console.log('Adding point ', normalized_p);
         this.points.push(normalized_p);
         Points.sortPoints(this.points);
     };
     pointSet.prototype.hasEdge = function(p, q) {
         var new_edge = [p, q];
         new_edge.sort(function(a,b) { return a - b; } );
-        console.log('New edge: ', new_edge);
         var found = -1;
         for(var i = 0; i < this.edges.length; ++i) {
             var e = this.edges[i];
-            console.log('Old edge: ', e);
             if(new_edge[0] === e[0] && new_edge[1] === e[1]) {
-                console.log('Found edge');
                 found = i;
                 break;
             }
@@ -69,13 +68,13 @@ var PointSet = (function() {
         return found;
     };
     pointSet.prototype.addEdge = function(p, q) {
-        console.log('Trying to add edge ', p, ' ', q);
+        var new_edge = [p, q];
+        new_edge.sort(function(a,b) { return a - b; } );
+        console.log('Trying to add edge ', new_edge);
         if(this.hasEdge(p,q) > -1) {
             console.log('Edge exists!');
             return false;
         }
-        var new_edge = [p, q];
-        new_edge.sort(function(a,b) { return a - b; } );
         var a = Edges.crossesEdges(new_edge, this.edges, this.points);
         if(a) {
             var e = a[0];
@@ -83,11 +82,8 @@ var PointSet = (function() {
             console.log('Crosses edge: ', e);
             var p0 = this.points[e[0]];
             var p1 = this.points[e[1]];
-            console.log('Between points: ', p0, ' ', p1);
-            console.log('At point:     ' , p);
             return false;
         } else {
-            console.log('Adding edge');
             this.edges.push(new_edge);
             return true;
         }
@@ -171,6 +167,7 @@ var PointSet = (function() {
         return s;
     };
     pointSet.prototype.fromString = function(s) {
+        var ps = this;
         this.clear();
         if(!s) {
             return;
@@ -179,24 +176,30 @@ var PointSet = (function() {
             s = s.split('|')[0];
         }
         var parts = s.split(';');
-        this.points = parts[0].split('_').map(function(s) {
+        parts[0].split('_').map(function(s) {
             if(s) {
-                console.log('Restoring: ', s);
                 var xy = s.split(',');
                 return {x: parseFloat(xy[0]),
                         y: parseFloat(xy[1])};
             }
-        }).filter(function(point) { return point !== undefined; });
+        }).filter(function(point) {
+            return point !== undefined;
+        }).forEach(function(point) {
+            ps.addPoint(point);
+        });
         function parseIntBaseTen(s) {
-            return parseInt(s, 10);
+            var radix = 10;
+            return parseInt(s, radix);
         }
-        this.edges = parts[1].split('_').map(function(s) {
+        parts[1].split('_').map(function(s) {
             if(s) {
-                console.log('Restoring: ', s);
                 return s.split(',').map(parseIntBaseTen);
             }
-        }).filter(function(point) { return point !== undefined; });
-        var radix = 10;
+        }).filter(function(edge) {
+            return edge !== undefined;
+        }).forEach(function(edge) {
+            ps.addEdge(edge[0], edge[1]);
+        });
     };
     pointSet.prototype.draw = function() {
         this.canvas.clear();
@@ -263,7 +266,7 @@ var PointSet = (function() {
         }
         var done = false;
         var tries = 0;
-        var max_tries = 2 * this.n;
+        var max_tries = this.n * this.n;
         outer: while(!done && tries < max_tries) {
             console.log('Starting Polygon Generation!');
             done = true;
@@ -290,7 +293,9 @@ var PointSet = (function() {
         }
         if(!done) {
             this.edges = [];
-            console.log('Failed!');
+            console.log('Failed after ', tries, ' tries!');
+        } else {
+            console.log('Succeeded after ', tries, ' tries!');
         }
     };
     pointSet.prototype.generateRandomPolygonB = function() {

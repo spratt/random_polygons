@@ -63,6 +63,23 @@
 
     function onLoad() {
         // restore n
+        function getN() {
+            var radix = 10;
+            var new_n = parseInt(nbox.value, radix);
+            if(isNaN(new_n) || new_n < min_n) {
+                nbox.value = min_n;
+                n = min_n;
+            } else {
+                n = new_n;
+            }
+            pointSets.forEach(function(pointSet) {
+                pointSet.clear();
+                pointSet.setN(n);
+                pointSet.draw();
+            });
+            console.log('n changed to: ', n);
+        }
+        nbox.addEventListener('change', getN);
         getN();
         
         // restore state
@@ -113,7 +130,6 @@
                 start = getMousePos(pointSet.canvas, evt);
             });
             pointSet.canvas.addEventListener('click', function(evt) {
-                pointSets.forEach(function(pointSet) { pointSet.draw(); });
                 getRadioValue();
                 var p = getMousePos(pointSet.canvas, evt);
                 console.log('click at (' + p.x + ',' + p.y + ')');
@@ -126,24 +142,22 @@
                 pointSet.draw();
                 saveState();
             });
-        });
-        function getN() {
-            var radix = 10;
-            var new_n = parseInt(nbox.value, radix);
-            if(isNaN(new_n) || new_n < min_n) {
-                nbox.value = min_n;
-                n = min_n;
-            } else {
-                n = new_n;
-            }
-            pointSets.forEach(function(pointSet) {
-                pointSet.clear();
-                pointSet.setN(n);
+            var tooSoon = false;
+            pointSet.canvas.addEventListener('mousemove', function(evt) {
+                if(tooSoon) return;
+                tooSoon = true;
+                setTimeout(function() { tooSoon = false; }, 500);
+                var p = getMousePos(pointSet.canvas, evt);
+                var point = pointSet.nearestPoint(p, clickBox);
+                if(point > -1) {
+                    output.innerHTML = 'Vertex ' + point;
+                }
             });
-            console.log('n changed to: ', n);
-        }
-        nbox.addEventListener('change', getN);
-        getN();
+            pointSet.canvas.addEventListener('mouseout', function(evt) {
+                tooSoon = false;
+                output.innerHTML = '';
+            });
+        });
     }
     
     (function setupOnLoad() {

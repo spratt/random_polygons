@@ -29,9 +29,9 @@ var Canvas = (function() {
         if(!color) {
             color = 'black';
         }
-        this.context.strokeStyle = color;
+        this.context.fillStyle = color;
         this.context.font = "24px sans-serif";
-        this.context.strokeText(text, x, y);
+        this.context.fillText(text, x, y);
     };
     canvas.prototype.clear = function() {
         var context = this.context;

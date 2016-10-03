@@ -34,6 +34,13 @@ var PointSet = (function() {
         var normalized_p = this.normalizeCoordinates(p);
         console.log('p: ', p);
         console.log('normalized_p: ', normalized_p);
+        for(var i = 0; i < this.points.length; ++i) {
+            var old_pt = this.points[i];
+            if(normalized_p.x === old_pt.x &&
+               normalized_p.y === old_pt.y) {
+                return;
+            }
+        }
         points_copy.push(normalized_p);
         Points.sortPoints(points_copy);
         var i = points_copy.indexOf(normalized_p);
@@ -121,7 +128,7 @@ var PointSet = (function() {
         return keys;
     }
     pointSet.prototype.getNeighbours = function(p) {
-        var edges = this.getAllEdges();
+        var edges = this.edges;
         var points = this.points;
         var point = points[p];
         var neighbours = [];
@@ -214,6 +221,19 @@ var PointSet = (function() {
             }
         }
         return -1;
+    };
+    // Returns a random integer between min (included) and max (excluded)
+    // Using Math.round() will give you a non-uniform distribution!
+    function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+    pointSet.prototype.generateRandomPoints = function() {
+        while(this.points.length < this.n) {
+            this.addPoint({x: getRandomInt(0, this.n) * this.gapX,
+                           y: getRandomInt(0, this.n) * this.gapY});
+        }
     };
     
     return pointSet;

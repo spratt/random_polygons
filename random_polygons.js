@@ -87,6 +87,12 @@
                 });
             }
         });
+        document.getElementById('genpoints').addEventListener('click', function(evt) {
+            pointSets.forEach(function(pointSet) {
+                pointSet.generateRandomPoints();
+                pointSet.draw();
+            });
+        });
         pointSets.forEach(function(pointSet) {
             var start = null;
             pointSet.canvas.addEventListener('mousedown', function(evt) {

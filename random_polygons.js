@@ -13,7 +13,7 @@
         var state = null;
         var title = null;
         var url = document.location.toString().split('?')[0];
-        url += '?' + pointSets[0].toString() + '|' + pointSets[1].toString();
+        url += '?' + pointSets[0].toString();
         history.pushState(state, title, url);
     }
 
@@ -70,9 +70,7 @@
         if(url.indexOf('?') !== -1) {
             var state = url.split('?')[1];
             console.log('Reloading from state: ' + state);
-            var states = state.split('|');
-            pointSets[0].fromString(states[0]);
-            pointSets[1].fromString(states[1]);
+            pointSets[0].fromString(state);
         }
 
         var useCapture = false;
@@ -84,6 +82,7 @@
                 pointSets.forEach(function(pointSet) {
                     pointSet.clear();
                     pointSet.draw();
+                    saveState();
                 });
             }
         });
@@ -91,6 +90,21 @@
             pointSets.forEach(function(pointSet) {
                 pointSet.generateRandomPoints();
                 pointSet.draw();
+                saveState();
+            });
+        });
+        document.getElementById('methodA').addEventListener('click', function(evt) {
+            pointSets.forEach(function(pointSet) {
+                pointSet.generateRandomPolygonA();
+                pointSet.draw();
+                saveState();
+            });
+        });
+        document.getElementById('methodB').addEventListener('click', function(evt) {
+            pointSets.forEach(function(pointSet) {
+                pointSet.generateRandomPolygonB();
+                pointSet.draw();
+                saveState();
             });
         });
         pointSets.forEach(function(pointSet) {
@@ -110,6 +124,7 @@
                 }
                 start = null;
                 pointSet.draw();
+                saveState();
             });
         });
         function getN() {

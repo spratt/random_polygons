@@ -55,11 +55,11 @@ var PointSet = (function() {
     pointSet.prototype.hasEdge = function(p, q) {
         var new_edge = [p, q];
         new_edge.sort(function(a,b) { return a - b; } );
-        console.log('New edge: ' + new_edge);
+        console.log('New edge: ', new_edge);
         var found = -1;
         for(var i = 0; i < this.edges.length; ++i) {
             var e = this.edges[i];
-            console.log('Old edge: ' + e);
+            console.log('Old edge: ', e);
             if(new_edge[0] === e[0] && new_edge[1] === e[1]) {
                 console.log('Found edge');
                 found = i;
@@ -69,8 +69,10 @@ var PointSet = (function() {
         return found;
     };
     pointSet.prototype.addEdge = function(p, q) {
+        console.log('Trying to add edge ', p, ' ', q);
         if(this.hasEdge(p,q) > -1) {
-            return;
+            console.log('Edge exists!');
+            return false;
         }
         var new_edge = [p, q];
         new_edge.sort(function(a,b) { return a - b; } );
@@ -78,15 +80,16 @@ var PointSet = (function() {
         if(a) {
             var e = a[0];
             var p = a[1];
-            console.log('Crosses edge: ' + e);
+            console.log('Crosses edge: ', e);
             var p0 = this.points[e[0]];
             var p1 = this.points[e[1]];
             console.log('Between points: ', p0, ' ', p1);
             console.log('At point:     ' , p);
+            return false;
         } else {
             console.log('Adding edge');
             this.edges.push(new_edge);
-            this.convexHull();
+            return true;
         }
     };
     pointSet.prototype.removePoint = function(index) {
@@ -233,6 +236,66 @@ var PointSet = (function() {
         while(this.points.length < this.n) {
             this.addPoint({x: getRandomInt(0, this.n) * this.gapX,
                            y: getRandomInt(0, this.n) * this.gapY});
+        }
+    };
+    function shuffle(array) {
+        let counter = array.length;
+
+        // While there are elements in the array
+        while (counter > 0) {
+            // Pick a random index
+            let index = Math.floor(Math.random() * counter);
+
+            // Decrease counter by 1
+            counter--;
+
+            // And swap the last element with it
+            let temp = array[counter];
+            array[counter] = array[index];
+            array[index] = temp;
+        }
+
+        return array;
+    }
+    pointSet.prototype.generateRandomPolygonA = function() {
+        if(this.points.length < this.n) {
+            this.generateRandomPoints();
+        }
+        var done = false;
+        var tries = 0;
+        var max_tries = 2 * this.n;
+        outer: while(!done && tries < max_tries) {
+            console.log('Starting Polygon Generation!');
+            done = true;
+            ++tries;
+            this.edges = [];
+            var indices = [];
+            for(var i = 0; i < this.points.length; ++i) {
+                indices.push(i);
+            }
+            shuffle(indices);
+            console.log('Generating polygon: ', indices);
+            for(var i = 1; i < indices.length; ++i) {
+                var pt1 = indices[i-1];
+                var pt2 = indices[i];
+                if(!this.addEdge(pt1, pt2)) {
+                    done = false;
+                    continue outer;
+                }
+            }
+            if(!this.addEdge(indices[indices.length - 1], indices[0])) {
+                done = false;
+                continue outer;
+            }
+        }
+        if(!done) {
+            this.edges = [];
+            console.log('Failed!');
+        }
+    };
+    pointSet.prototype.generateRandomPolygonB = function() {
+        if(this.points.length < this.n) {
+            this.generateRandomPoints();
         }
     };
     

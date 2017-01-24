@@ -3,6 +3,7 @@
     // configuration
     var clickBox = 60;
     var min_n = 3;
+    var n;
 
     var pointSets = [new PointSet(new Canvas(document.getElementById('c')))];
 
